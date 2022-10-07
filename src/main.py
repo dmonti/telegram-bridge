@@ -9,6 +9,7 @@ from telegram_bridge import TelegramBridge
 
 log.basicConfig(
     level=log.INFO,
+    filename="application.log",
     format='%(asctime)s %(levelname)-8s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S')
 
