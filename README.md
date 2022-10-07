@@ -1,5 +1,7 @@
 # telegram-bridge
 
+This application read the messages from a source group and then send those message to another target group 
+
 ## Configuring and running:
 
 1. Install dependencies:
