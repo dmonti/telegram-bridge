@@ -30,6 +30,7 @@ asyncio.set_event_loop(loop)
 async def main():
     telegram = TelegramClient(session_path, api_id, api_hash, loop=loop)
     log.info("Starting telegram client")
+    await telegram.start()
 
     kvdb = KvdbClient(kvdb_bucket_id)
     last_message_id = kvdb.get_int("last-message-id")
