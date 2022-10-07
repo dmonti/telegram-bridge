@@ -18,7 +18,7 @@ This application read the messages from a source group and then send those messa
 
 5. Create application.ini on project base path
 ```
-[betty]
+[bridge]
 source_group_id=
 target_group_id=
 

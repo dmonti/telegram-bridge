@@ -21,8 +21,8 @@ session_path = config.get('telegram', 'session_path')
 api_id = config.get_int('telegram', 'api_id')
 api_hash = config.get('telegram', 'api_hash')
 
-source_group_id = config.get_int('betty', 'source_group_id')
-target_group_id = config.get_int('betty', 'target_group_id')
+source_group_id = config.get_int('bridge', 'source_group_id')
+target_group_id = config.get_int('bridge', 'target_group_id')
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
