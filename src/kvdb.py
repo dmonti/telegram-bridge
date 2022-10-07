@@ -1,4 +1,5 @@
 import http.client
+import logging as log
 
 
 class KvdbClient:
@@ -20,7 +21,7 @@ class KvdbClient:
         try:
             conn.request("GET", self.build_path(key))
             data = conn.getresponse().read().decode()
-            print(f"KVDB - {key}={data} recovered")
+            log.debug(f"KVDB - {key}={data} recovered")
             return data
         finally:
             conn.close()

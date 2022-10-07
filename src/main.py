@@ -1,10 +1,16 @@
 import asyncio
+import logging as log
 
 from telethon import TelegramClient
 
 from config import Config
 from kvdb import KvdbClient
 from telegram_bridge import TelegramBridge
+
+log.basicConfig(
+    level=log.INFO,
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 config = Config()
 
@@ -22,9 +28,8 @@ asyncio.set_event_loop(loop)
 
 
 async def main():
-    print("Starting telegram client")
     telegram = TelegramClient(session_path, api_id, api_hash, loop=loop)
-    telegram.start()
+    log.info("Starting telegram client")
 
     kvdb = KvdbClient(kvdb_bucket_id)
     last_message_id = kvdb.get_int("last-message-id")

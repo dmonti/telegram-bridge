@@ -1,3 +1,4 @@
+import logging as log
 from time import sleep
 
 from telethon import TelegramClient
@@ -15,7 +16,6 @@ def map_to_links(buttons):
 
 
 class TelegramBridge:
-    _loop = None
 
     def __init__(self, client: TelegramClient,
                  source_channel_id: int,
@@ -31,24 +31,26 @@ class TelegramBridge:
 
     async def start(self):
         self.running = True
-        print("Starting bridge monitor")
+        log.info("Starting TelegramBridge monitor")
+        if self.client.disconnected:
+            await self.client.connect()
 
         source_channel = PeerChannel(self.source_channel_id)
         source_entity = await self.client.get_entity(source_channel)
         target_channel = PeerChannel(self.target_channel_id)
         target_entity = await self.client.get_entity(target_channel)
 
-        print(f"TelegramBridge looking group {source_entity.title} for messages")
+        log.info(f"TelegramBridge looking group {source_entity.title} for messages")
         while self.running:
             min_id = self.last_message_id
             async for message in self.client.iter_messages(source_entity, min_id=min_id, reverse=True):
-                print(f"New message received #{message.id}")
+                log.info(f"New message received #{message.id}")
                 await self.send_message_channel(message, target_entity)
                 self.last_message_id = message.id
 
             sleep(self.interval_secs)
 
-        print("Telegram monitor stopped")
+        log.info("Telegram monitor stopped")
 
     async def send_message_channel(self, message, channel: Channel):
         client = self.client
@@ -56,8 +58,8 @@ class TelegramBridge:
         for link in map_to_links(message.buttons):
             await client.send_message(channel.id, link, link_preview=False)
 
-        print(f"New message #{message.id} sent to {channel.title}")
+        log.info(f"New message #{message.id} sent to {channel.title}")
 
     def stop(self):
         self.running = False
-        print("Stopping telegram monitor...")
+        log.info("Stopping telegram monitor...")
