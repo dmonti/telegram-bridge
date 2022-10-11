@@ -1,5 +1,5 @@
+import asyncio
 import logging as log
-from time import sleep
 
 from telethon import TelegramClient
 from telethon.tl.types import PeerChannel, Channel
@@ -17,48 +17,47 @@ def map_to_links(buttons):
 
 class TelegramBridge:
 
-    def __init__(self, client: TelegramClient,
-                 source_channel_id: int,
-                 target_channel_id: int,
-                 last_message_id=None,
-                 interval_secs=60):
-        self.client = client
-        self.source_channel_id = source_channel_id
-        self.target_channel_id = target_channel_id
-        self.last_message_id = last_message_id
-        self.interval_secs = interval_secs
+    def __init__(self, client: TelegramClient, source_entity, target_entity, last_message_id: int):
         self.running = False
+        self.client = client
+        self.source_entity = source_entity
+        self.target_entity = target_entity
+        self.last_message_id = last_message_id
 
-    async def start(self):
+    async def start(self, update_event=None, interval_secs=60):
         self.running = True
-        log.info("Starting TelegramBridge monitor")
-        if self.client.disconnected:
-            await self.client.connect()
+        min_id = self.last_message_id
 
-        source_channel = PeerChannel(self.source_channel_id)
-        source_entity = await self.client.get_entity(source_channel)
-        target_channel = PeerChannel(self.target_channel_id)
-        target_entity = await self.client.get_entity(target_channel)
+        log.info(f"""
+        Starting bridge with ID #{min_id} (min_id)
+        Source group: {self.source_entity.title} #{self.source_entity.id}
+        Target group: {self.target_entity.title} #{self.target_entity.id}""")
+        await asyncio.sleep(3)
 
-        log.info(f"TelegramBridge looking group {source_entity.title} for messages")
         while self.running:
-            min_id = self.last_message_id
-            async for message in self.client.iter_messages(source_entity, min_id=min_id, reverse=True):
+            async for message in self.client.iter_messages(self.source_entity, min_id=min_id, reverse=True):
                 log.info(f"New message received #{message.id}")
-                await self.send_message_channel(message, target_entity)
+                await self.send_message_channel(message, self.target_entity)
                 self.last_message_id = message.id
 
-            sleep(self.interval_secs)
+            if min_id < self.last_message_id:
+                min_id = self.last_message_id
+                update_event(self)
+
+            log.debug(f"Waiting {interval_secs}s")
+            await asyncio.sleep(interval_secs)
 
         log.info("Telegram monitor stopped")
 
     async def send_message_channel(self, message, channel: Channel):
-        client = self.client
-        await client.send_message(channel.id, message.message)
+        await self.client.send_message(channel.id, message.message)
         for link in map_to_links(message.buttons):
-            await client.send_message(channel.id, link, link_preview=False)
-
+            await self.client.send_message(channel.id, link, link_preview=False)
         log.info(f"New message #{message.id} sent to {channel.title}")
+
+    async def get_group_entity(self, group_id):
+        channel = PeerChannel(group_id)
+        return await self.client.get_entity(channel)
 
     def stop(self):
         self.running = False

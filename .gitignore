@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 *.session*
-application.ini
+*.ini
+*.pem

@@ -7,7 +7,7 @@ This application read the messages from a source group and then send those messa
 1. Install dependencies:
 > $ pip3 install -r requirements.txt
 
-2. Creating your Telegram Application at:
+2. Creating your Telegram application at:
 > https://core.telegram.org/api/obtaining_api_id
 
 3. Creating your KVDB bucket
